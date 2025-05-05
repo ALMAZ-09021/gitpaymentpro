@@ -272,8 +272,8 @@
 
 <script>
     // Конфигурация Supabase
-    const SUPABASE_URL = 'YOURKEY'; // Замените на ваш URL Supabase
-    const SUPABASE_ANON_KEY = 'YOURANONIMKEY'; // Замените на ваш анонимный ключ Supabase
+    const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
     // Инициализация Supabase клиента
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
