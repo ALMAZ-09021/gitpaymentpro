@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата собеседования | Proshka</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --background-color: #f5f5f5;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 20px 0;
+            color: var(--text-color);
+        }
+
+        .details {
+            margin-bottom: 30px;
+        }
+
+        .detail-item {
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            width: 150px;
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #f57c00;
+        }
+
+        .status-paid {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: var(--success-color);
+        }
+
+        .payment-methods {
+            margin-bottom: 30px;
+        }
+
+        .payment-method {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(63, 81, 181, 0.05);
+        }
+
+        .payment-method-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-method-name {
+            font-weight: 500;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .button-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background-color: #303f9f;
+        }
+
+        .button-primary:disabled {
+            background-color: #9fa8da;
+            cursor: not-allowed;
+        }
+
+        .button-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: var(--success-color);
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .payment-option {
+            margin-bottom: 15px;
+        }
+
+        .payment-option input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">PROШКА</div>
+    </div>
+
+    <div class="card" id="interview-details">
+        <h1>Оплата собеседования</h1>
+        <div id="loading-details">Загрузка данных собеседования...</div>
+
+        <div id="interview-content" style="display: none;">
+            <div class="details">
+                <div class="detail-item">
+                    <div class="detail-label">Тема:</div>
+                    <div class="detail-value" id="interview-title">Frontend Development</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ментор:</div>
+                    <div class="detail-value" id="interview-mentor">Александр Иванов</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Дата:</div>
+                    <div class="detail-value" id="interview-date">10 мая 2023</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Статус оплаты:</div>
+                    <div class="detail-value">
+                        <span class="status status-pending" id="payment-status">Не оплачено</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Сумма:</div>
+                    <div class="detail-value" id="interview-price">1500 ₽</div>
+                </div>
+            </div>
+
+            <div class="payment-methods">
+                <h2>Способ оплаты</h2>
+                <div class="payment-option">
+                    <input type="radio" id="card" name="payment" value="card" checked>
+                    <label for="card">Банковская карта</label>
+                </div>
+                <div class="payment-option">
+                    <input type="radio" id="yoomoney" name="payment" value="yoomoney">
+                    <label for="yoomoney">ЮMoney</label>
+                </div>
+                <div class="payment-option">
+                    <input type="radio" id="sbp" name="payment" value="sbp">
+                    <label for="sbp">Система быстрых платежей (СБП)</label>
+                </div>
+            </div>
+
+            <button id="pay-button" class="button button-primary">
+                Оплатить
+            </button>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Конфигурация Supabase
+    const SUPABASE_URL = 'YOURKEY'; // Замените на ваш URL Supabase
+    const SUPABASE_ANON_KEY = 'YOURANONIMKEY'; // Замените на ваш анонимный ключ Supabase
+
+    // Инициализация Supabase клиента
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Глобальные переменные
+    let interviewId = null;
+    let isPaid = false;
+
+    // Получаем ID интервью из URL
+    function getInterviewIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // Функция для форматирования даты
+    function formatDate(dateString) {
+        if (!dateString) return 'Не указана';
+
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
+    // Функция для загрузки данных о собеседовании
+    async function loadInterviewData() {
+        try {
+            // Получаем ID из URL
+            interviewId = getInterviewIdFromUrl();
+
+            if (!interviewId) {
+                showError('ID собеседования не указан в URL');
+                return;
+            }
+
+            // Загружаем данные собеседования
+            const { data: interview, error } = await supabase
+                .from('interviews')
+                .select(`
+                        id,
+                        title,
+                        price,
+                        status,
+                        selected_date,
+                        is_paid,
+                        mentor_id,
+                        users:mentor_id (
+                            nickname,
+                            profile_photo
+                        )
+                    `)
+                .eq('id', interviewId)
+                .single();
+
+            if (error) {
+                console.error('Ошибка при загрузке данных собеседования:', error);
+                showError('Не удалось загрузить данные собеседования');
+                return;
+            }
+
+            if (!interview) {
+                showError('Собеседование не найдено');
+                return;
+            }
+
+            // Заполняем информацию о собеседовании
+            document.getElementById('interview-title').textContent = interview.title || 'Без названия';
+            document.getElementById('interview-mentor').textContent = interview.users ? interview.users.nickname : 'Неизвестный ментор';
+            document.getElementById('interview-date').textContent = formatDate(interview.selected_date);
+            document.getElementById('interview-price').textContent = interview.price ? `${interview.price} ₽` : 'Бесплатно';
+
+            // Обновляем статус оплаты
+            isPaid = interview.is_paid || false;
+            updatePaymentStatus(isPaid);
+
+            // Показываем содержимое
+            document.getElementById('loading-details').style.display = 'none';
+            document.getElementById('interview-content').style.display = 'block';
+        } catch (error) {
+            console.error('Ошибка при загрузке данных:', error);
+            showError('Произошла ошибка при загрузке данных');
+        }
+    }
+
+    // Обновление статуса оплаты на странице
+    function updatePaymentStatus(isPaid) {
+        const statusElement = document.getElementById('payment-status');
+        const payButton = document.getElementById('pay-button');
+
+        if (isPaid) {
+            statusElement.textContent = 'Оплачено';
+            statusElement.className = 'status status-paid';
+            payButton.disabled = true;
+            payButton.textContent = 'Уже оплачено';
+            payButton.className = 'button button-success';
+        } else {
+            statusElement.textContent = 'Не оплачено';
+            statusElement.className = 'status status-pending';
+            payButton.disabled = false;
+            payButton.textContent = 'Оплатить';
+            payButton.className = 'button button-primary';
+        }
+    }
+
+    // Обработка оплаты собеседования
+    async function processPayment() {
+        if (isPaid) {
+            showMessage('Это собеседование уже оплачено', 'success');
+            return;
+        }
+
+        const payButton = document.getElementById('pay-button');
+        payButton.disabled = true;
+        payButton.innerHTML = 'Обработка платежа <span class="loader"></span>';
+
+        try {
+            // Здесь в реальном приложении была бы интеграция с платежной системой
+            // Для демо просто обновляем статус в базе данных
+
+            const { error } = await supabase
+                .from('interviews')
+                .update({ is_paid: true })
+                .eq('id', interviewId);
+
+            if (error) {
+                console.error('Ошибка при обновлении статуса оплаты:', error);
+                showError('Не удалось обновить статус оплаты');
+                payButton.disabled = false;
+                payButton.textContent = 'Оплатить';
+                return;
+            }
+
+            // Обновляем статус на странице
+            isPaid = true;
+            updatePaymentStatus(true);
+            showMessage('Оплата успешно произведена! Спасибо за оплату.', 'success');
+        } catch (error) {
+            console.error('Ошибка при обработке платежа:', error);
+            showError('Произошла ошибка при обработке платежа');
+            payButton.disabled = false;
+            payButton.textContent = 'Оплатить';
+        }
+    }
+
+    // Показать сообщение об ошибке
+    function showError(message) {
+        const errorElement = document.getElementById('error-message');
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+
+        document.getElementById('success-message').style.display = 'none';
+    }
+
+    // Показать сообщение об успехе
+    function showMessage(message, type = 'error') {
+        const elementId = type === 'success' ? 'success-message' : 'error-message';
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.style.display = 'block';
+
+        if (type === 'success') {
+            document.getElementById('error-message').style.display = 'none';
+        } else {
+            document.getElementById('success-message').style.display = 'none';
+        }
+    }
+
+    // Инициализация страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        // Загружаем данные о собеседовании
+        loadInterviewData();
+
+        // Добавляем обработчик нажатия на кнопку оплаты
+        document.getElementById('pay-button').addEventListener('click', processPayment);
+    });
+</script>
+</body>
+</html>
