@@ -38,10 +38,10 @@
                         <span class="status status-pending" id="payment-status">Не оплачено</span>
                     </div>
                 </div>
-<!--                <div class="detail-item">-->
-<!--                    <div class="detail-label">Сумма:</div>-->
-<!--                    <div class="detail-value" id="interview-price">1500 ₽</div>-->
-<!--                </div>-->
+                <div class="detail-item">
+                    <div class="detail-label">Сумма:</div>
+                    <div class="detail-value" id="interview-price">1500 ₽</div>
+                </div>
             </div>
 
             <div class="payment-methods">
@@ -124,7 +124,7 @@
             document.getElementById('interview-title').textContent = interview.title || 'Без названия';
             document.getElementById('interview-mentor').textContent = interview.mentor_name || 'Неизвестный ментор';
             document.getElementById('interview-date').textContent = formatDate(interview.selected_date);
-            document.getElementById('interview-price').textContent = interview.price ? `${interview.price} ₽` : 'Бесплатно';
+            document.getElementById('interview-price').textContent = interview.price ? `${interview.price} ₽` : '₽';
 
             // Обновляем статус оплаты
             isPaid = interview.is_paid || false;
