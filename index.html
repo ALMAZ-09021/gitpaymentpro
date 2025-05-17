@@ -124,7 +124,7 @@
             document.getElementById('interview-title').textContent = interview.title || 'Без названия';
             document.getElementById('interview-mentor').textContent = interview.mentor_name || 'Неизвестный ментор';
             document.getElementById('interview-date').textContent = formatDate(interview.selected_date);
-            document.getElementById('interview-price').textContent = interview.price ? `${interview.price} ₽` : 'Оплата в рублях';
+            document.getElementById('interview-price').textContent = interview.hourly_rate ? `${interview.hourly_rate} ₽` : 'Оплата в рублях';
 
             // Обновляем статус оплаты
             isPaid = interview.is_paid || false;
