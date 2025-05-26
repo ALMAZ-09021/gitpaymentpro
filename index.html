@@ -148,7 +148,7 @@
             statusElement.textContent = 'Оплачено';
             statusElement.className = 'status status-paid';
             payButton.disabled = true;
-            payButton.textContent = 'Уже оплачено';
+            payButton.textContent = 'Успешно оплачено';
             payButton.className = 'button button-success';
         } else {
             statusElement.textContent = 'Не оплачено';
@@ -162,7 +162,7 @@
     // Обработка оплаты собеседования
     async function processPayment() {
         if (isPaid) {
-            showMessage('Это собеседование уже оплачено', 'success');
+            showMessage('Это собеседование успешно оплачено', 'success');
             return;
         }
 
